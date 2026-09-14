@@ -15,12 +15,16 @@ pub struct PciDevice {
     pub device_id: u16,
     pub class: u8,
     pub subclass: u8,
-    /// Not shown by the PCI screen yet, but kept for a possible future
-    /// detail view (e.g. distinguishing an AHCI vs. IDE-native-mode SATA
-    /// controller, which differ only in `prog_if`).
-    #[allow(dead_code)]
     pub prog_if: u8,
     pub revision: u8,
+    /// Bits 0-6 identify the config space layout (0 = normal device, 1 =
+    /// PCI-to-PCI bridge, 2 = CardBus bridge); bit 7 marks a multi-function
+    /// device. Only header type 0 has the "6 general-purpose BARs" layout
+    /// that [`Self::bars`] assumes.
+    pub header_type: u8,
+    /// Raw Base Address Registers 0-5 (config space offsets 0x10-0x24),
+    /// meaningful only when `header_type & 0x7f == 0`.
+    pub bars: [u32; 6],
 }
 
 impl PciDevice {
@@ -46,6 +50,37 @@ impl PciDevice {
             (0x0c, _) => "Serial bus controller",
             _ => "Unknown",
         }
+    }
+
+    /// A human-readable decode of BAR `index` (0-5), per the PCI spec's Base
+    /// Address Register format. Returns `None` if the register is unused
+    /// (value 0) or this device doesn't have the type-0 BAR layout.
+    pub fn decode_bar(&self, index: usize) -> Option<alloc::string::String> {
+        use alloc::format;
+
+        if self.header_type & 0x7f != 0 {
+            return None;
+        }
+        let raw = *self.bars.get(index)?;
+        if raw == 0 {
+            return None;
+        }
+
+        Some(if raw & 0x1 == 1 {
+            format!("I/O, base {:#06x}", raw & !0x3)
+        } else {
+            let kind = match (raw >> 1) & 0x3 {
+                0 => "32-bit",
+                2 => "64-bit",
+                _ => "reserved-width",
+            };
+            let prefetchable = if raw & 0x8 != 0 {
+                "prefetchable"
+            } else {
+                "non-prefetchable"
+            };
+            format!("Memory, {kind}, {prefetchable}, base {:#010x}", raw & !0xf)
+        })
     }
 }
 
@@ -110,6 +145,20 @@ pub fn scan() -> Vec<PciDevice> {
                         .unwrap_or(0);
                     let [revision, prog_if, subclass, class] = class_reg.to_le_bytes();
 
+                    let header_reg = pci
+                        .read_one::<u32>(addr.with_register(0x0C))
+                        .unwrap_or(0);
+                    let header_type = (header_reg >> 16) as u8;
+
+                    let mut bars = [0u32; 6];
+                    if header_type & 0x7f == 0 {
+                        for (i, bar) in bars.iter_mut().enumerate() {
+                            *bar = pci
+                                .read_one::<u32>(addr.with_register(0x10 + (i as u8) * 4))
+                                .unwrap_or(0);
+                        }
+                    }
+
                     devices.push(PciDevice {
                         bus,
                         device,
@@ -120,19 +169,14 @@ pub fn scan() -> Vec<PciDevice> {
                         subclass,
                         prog_if,
                         revision,
+                        header_type,
+                        bars,
                     });
 
-                    if function == 0 {
+                    if function == 0 && header_type & 0x80 == 0 {
                         // Only multi-function devices have anything beyond
-                        // function 0; check the header type bit to decide
-                        // whether to keep scanning functions 1-7.
-                        let header_reg = pci
-                            .read_one::<u32>(addr.with_register(0x0C))
-                            .unwrap_or(0);
-                        let header_type = (header_reg >> 16) as u8;
-                        if header_type & 0x80 == 0 {
-                            break;
-                        }
+                        // function 0.
+                        break;
                     }
                 }
             }

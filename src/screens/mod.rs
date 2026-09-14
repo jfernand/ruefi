@@ -90,10 +90,17 @@ fn centered_rect(percent_x: u16, percent_y: u16, area: Rect) -> Rect {
     center
 }
 
-/// Draws a hex dump as a modal dialog centered over `area`, on top of
-/// whatever the screen already rendered there. Shared by every screen that
-/// lets you drill into a raw byte value (disk sectors, NVRAM variables).
-pub(crate) fn render_hex_dialog(frame: &mut Frame, area: Rect, title: &str, dump: &[u8]) {
+/// Draws a modal dialog centered over `area`, on top of whatever the
+/// screen already rendered there, and hands the caller its inner
+/// (border-excluded) area to fill in however it likes. Shared by every
+/// screen that drills into a row's details -- a raw byte dump, a
+/// device's full field breakdown, whatever.
+pub(crate) fn render_dialog(
+    frame: &mut Frame,
+    area: Rect,
+    title: &str,
+    content: impl FnOnce(&mut Frame, Rect),
+) {
     let popup = centered_rect(80, 70, area);
 
     // Erase whatever the table drew underneath before painting the dialog
@@ -107,5 +114,12 @@ pub(crate) fn render_hex_dialog(frame: &mut Frame, area: Rect, title: &str, dump
         .style(Style::default().fg(Color::Cyan).bg(Color::Black));
     let inner = block.inner(popup);
     frame.render_widget(block, popup);
-    frame.render_widget(HexDump::new(dump), inner);
+    content(frame, inner);
+}
+
+/// Draws a hex dump as a modal dialog. See [`render_dialog`].
+pub(crate) fn render_hex_dialog(frame: &mut Frame, area: Rect, title: &str, dump: &[u8]) {
+    render_dialog(frame, area, title, |frame, inner| {
+        frame.render_widget(HexDump::new(dump), inner);
+    });
 }

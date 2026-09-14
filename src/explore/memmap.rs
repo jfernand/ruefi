@@ -9,15 +9,11 @@ use uefi::mem::memory_map::MemoryMap;
 #[derive(Debug, Clone)]
 pub struct MemRegion {
     pub ty: String,
-    /// Not shown by the summary screen yet, but kept for a possible future
-    /// per-region (rather than per-type) view.
-    #[allow(dead_code)]
     pub phys_start: u64,
     pub page_count: u64,
 }
 
 impl MemRegion {
-    #[allow(dead_code)]
     pub fn size_bytes(&self) -> u64 {
         self.page_count * 4096
     }
