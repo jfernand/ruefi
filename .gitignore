@@ -1,0 +1,5 @@
+/target
+/restart.sh
+/esp
+/OVMF_VARS.fd
+/.idea

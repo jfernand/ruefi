@@ -1,0 +1,12 @@
+[package]
+name = "ruefi"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+uefi = { version = "0.40", features = ["panic_handler", "alloc", "global_allocator", "logger"] }
+ratatui = { version = "0.30", default-features = false }
+
+[profile.release]
+panic = "abort"
+lto = true
