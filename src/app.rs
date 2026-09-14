@@ -1,25 +1,26 @@
-//! The ruefi demo application: a small interactive menu driven by a real
-//! UEFI event loop (keyboard + periodic timer).
+//! The ruefi application shell: owns the terminal, the UEFI event loop,
+//! and the tab bar. Everything screen-specific -- state, rendering, key
+//! handling -- lives in [`crate::screens`].
 
+use alloc::boxed::Box;
 use alloc::format;
-use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use core::time::Duration;
 
 use ratatui::Terminal;
-use ratatui::layout::Rect;
+use ratatui::layout::{Constraint, Layout};
 use ratatui::style::{Color, Modifier, Style};
-use ratatui::widgets::{Block, Borders, List, ListItem, ListState, Paragraph};
+use ratatui::widgets::{Paragraph, Tabs};
 use uefi::boot::{self, EventType, TimerTrigger, Tpl};
 use uefi::prelude::*;
 use uefi::proto::console::text::{Key, ScanCode};
 use uefi::{Char16, Event, system};
 
+use crate::screens::{self, Action, Screen};
 use crate::uefi_backend::UefiBackend;
 
-const MENU_ITEMS: [&str; 4] = ["Reset counter", "Say hello", "Do nothing", "Quit (Esc or 'q')"];
-const SPINNER: [char; 4] = ['|', '/', '-', '\\'];
 const TICK_INTERVAL: Duration = Duration::from_millis(250);
+const SPINNER: [char; 4] = ['|', '/', '-', '\\'];
 
 /// A tick of the event loop: either a key was pressed, or the periodic
 /// timer fired with no key available.
@@ -28,26 +29,20 @@ enum Tick {
     Timer,
 }
 
-/// What the app should do after handling one tick.
-enum Action {
-    Continue,
-    Quit,
-}
-
-/// The application's UI + event-loop state.
 pub struct App {
     terminal: Terminal<UefiBackend>,
     key_event: Event,
     timer_event: Event,
-    list_state: ListState,
-    counter: i32,
-    message: String,
     spinner_frame: usize,
+    tab: usize,
+    screens: Vec<Box<dyn Screen>>,
 }
 
 impl App {
-    /// Sets up the terminal, backend and firmware events. Does not draw
-    /// anything yet -- that happens on the first iteration of `run`.
+    /// Sets up the terminal, backend, firmware events, and every screen
+    /// (which each gather their own platform data on construction). Does
+    /// not draw anything yet -- that happens on the first iteration of
+    /// `run`.
     pub fn new() -> Self {
         let backend = UefiBackend::new();
         let terminal = Terminal::new(backend).unwrap();
@@ -61,17 +56,22 @@ impl App {
                 .unwrap();
         boot::set_timer(&timer_event, TimerTrigger::Periodic(TICK_INTERVAL)).unwrap();
 
-        let mut list_state = ListState::default();
-        list_state.select(Some(0));
+        let screens: Vec<Box<dyn Screen>> = alloc::vec![
+            Box::new(screens::menu::MenuScreen::new()),
+            Box::new(screens::memory::MemoryScreen::new()),
+            Box::new(screens::acpi::AcpiScreen::new()),
+            Box::new(screens::pci::PciScreen::new()),
+            Box::new(screens::disks::DisksScreen::new()),
+            Box::new(screens::vars::VarsScreen::new()),
+        ];
 
         Self {
             terminal,
             key_event,
             timer_event,
-            list_state,
-            counter: 0,
-            message: "Use \u{2191}/\u{2193} to move, Enter to select".to_string(),
             spinner_frame: 0,
+            tab: 0,
+            screens,
         }
     }
 
@@ -82,7 +82,7 @@ impl App {
             self.draw();
 
             match self.next_tick() {
-                Tick::Timer => self.on_timer(),
+                Tick::Timer => self.spinner_frame = self.spinner_frame.wrapping_add(1),
                 Tick::Key(key) => match self.on_key(key) {
                     Action::Continue => {}
                     Action::Quit => break,
@@ -95,57 +95,38 @@ impl App {
     }
 
     fn draw(&mut self) {
-        let list_state = &mut self.list_state;
-        let counter = self.counter;
-        let message = &self.message;
+        let tab = self.tab;
         let spinner = SPINNER[self.spinner_frame % SPINNER.len()];
+        let titles: Vec<&'static str> = self.screens.iter().map(|s| s.title()).collect();
+        let screen = &mut self.screens[tab];
 
         self.terminal
             .draw(|frame| {
                 let area = frame.area();
+                let [tabs_area, content_area, footer_area] = Layout::vertical([
+                    Constraint::Length(1),
+                    Constraint::Min(0),
+                    Constraint::Length(1),
+                ])
+                .areas(area);
 
-                let list_items: Vec<ListItem> =
-                    MENU_ITEMS.iter().map(|i| ListItem::new(*i)).collect();
-
-                let list = List::new(list_items)
-                    .block(
-                        Block::default()
-                            .title(" ruefi menu ")
-                            .borders(Borders::ALL)
-                            .style(Style::default().fg(Color::Cyan)),
-                    )
+                let tabs = Tabs::new(titles)
+                    .select(tab)
+                    .style(Style::default().fg(Color::Gray))
                     .highlight_style(
                         Style::default()
-                            .bg(Color::Blue)
                             .fg(Color::White)
                             .add_modifier(Modifier::BOLD),
-                    )
-                    .highlight_symbol("> ");
-
-                let bottom_h = 4u16.min(area.height);
-                let list_area = Rect {
-                    x: area.x,
-                    y: area.y,
-                    width: area.width,
-                    height: area.height.saturating_sub(bottom_h),
-                };
-                let status_area = Rect {
-                    x: area.x,
-                    y: area.y + list_area.height,
-                    width: area.width,
-                    height: bottom_h,
-                };
-
-                frame.render_stateful_widget(list, list_area, list_state);
-
-                let status = Paragraph::new(format!("counter: {counter}   {spinner}\n{message}"))
-                    .block(
-                        Block::default()
-                            .title(" status ")
-                            .borders(Borders::ALL)
-                            .style(Style::default().fg(Color::Yellow)),
                     );
-                frame.render_widget(status, status_area);
+                frame.render_widget(tabs, tabs_area);
+
+                screen.render(frame, content_area);
+
+                let footer = Paragraph::new(format!(
+                    " {spinner}  \u{2190}/\u{2192} tabs   \u{2191}/\u{2193} select   Enter act   Esc/q quit"
+                ))
+                .style(Style::default().fg(Color::DarkGray));
+                frame.render_widget(footer, footer_area);
             })
             .unwrap();
     }
@@ -177,45 +158,22 @@ impl App {
         Tick::Timer
     }
 
-    /// The timer is what makes this a *real* event loop rather than a
-    /// blocking read: the spinner advances, and anything else time-based (a
-    /// clock, an animation, a poll of some other device) would go here too,
-    /// alongside the key handling below rather than instead of it.
-    fn on_timer(&mut self) {
-        self.spinner_frame = self.spinner_frame.wrapping_add(1);
-    }
-
+    /// Global key bindings -- tab switching and quit -- that apply no
+    /// matter which screen is active. Anything else is handed to the
+    /// active screen's own `on_key`.
     fn on_key(&mut self, key: Key) -> Action {
         match key {
-            Key::Special(ScanCode::UP) => {
-                let i = self.list_state.selected().unwrap_or(0);
-                self.list_state.select(Some(i.saturating_sub(1)));
+            Key::Special(ScanCode::LEFT) => {
+                self.tab = (self.tab + self.screens.len() - 1) % self.screens.len();
+                Action::Continue
             }
-            Key::Special(ScanCode::DOWN) => {
-                let i = self.list_state.selected().unwrap_or(0);
-                self.list_state
-                    .select(Some((i + 1).min(MENU_ITEMS.len() - 1)));
+            Key::Special(ScanCode::RIGHT) => {
+                self.tab = (self.tab + 1) % self.screens.len();
+                Action::Continue
             }
-            Key::Special(ScanCode::ESCAPE) => return Action::Quit,
-            Key::Printable(c) if c == Char16::try_from('q').unwrap() => return Action::Quit,
-            Key::Printable(c) if c == Char16::try_from('\r').unwrap() => {
-                match self.list_state.selected() {
-                    Some(0) => {
-                        self.counter = 0;
-                        self.message = "Counter reset".to_string();
-                    }
-                    Some(1) => {
-                        self.counter += 1;
-                        self.message = "Hello from ruefi!".to_string();
-                    }
-                    Some(3) => return Action::Quit,
-                    _ => {
-                        self.message = "Nothing happened".to_string();
-                    }
-                }
-            }
-            _ => {}
+            Key::Special(ScanCode::ESCAPE) => Action::Quit,
+            Key::Printable(c) if c == Char16::try_from('q').unwrap() => Action::Quit,
+            other => self.screens[self.tab].on_key(other),
         }
-        Action::Continue
     }
 }
