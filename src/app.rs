@@ -57,7 +57,6 @@ impl App {
         boot::set_timer(&timer_event, TimerTrigger::Periodic(TICK_INTERVAL)).unwrap();
 
         let screens: Vec<Box<dyn Screen>> = alloc::vec![
-            Box::new(screens::menu::MenuScreen::new()),
             Box::new(screens::memory::MemoryScreen::new()),
             Box::new(screens::acpi::AcpiScreen::new()),
             Box::new(screens::pci::PciScreen::new()),

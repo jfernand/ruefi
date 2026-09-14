@@ -7,13 +7,16 @@ use alloc::format;
 use alloc::string::String;
 
 use ratatui::Frame;
-use ratatui::layout::Rect;
+use ratatui::layout::{Constraint, Layout, Rect};
+use ratatui::style::{Color, Style};
+use ratatui::widgets::{Block, Borders, Clear};
 use uefi::proto::console::text::Key;
+
+use crate::widgets::HexDump;
 
 pub mod acpi;
 pub mod disks;
 pub mod memory;
-pub mod menu;
 pub mod pci;
 pub mod vars;
 
@@ -65,4 +68,44 @@ pub(crate) fn move_selection(selected: Option<usize>, delta: i32, len: usize) ->
     }
     let current = selected.unwrap_or(0) as i32;
     Some((current + delta).clamp(0, len as i32 - 1) as usize)
+}
+
+/// A `percent_x` by `percent_y` rectangle centered within `area` -- the
+/// standard ratatui recipe for a modal dialog's bounds.
+fn centered_rect(percent_x: u16, percent_y: u16, area: Rect) -> Rect {
+    let [_, middle, _] = Layout::vertical([
+        Constraint::Percentage((100 - percent_y) / 2),
+        Constraint::Percentage(percent_y),
+        Constraint::Percentage((100 - percent_y) / 2),
+    ])
+    .areas(area);
+
+    let [_, center, _] = Layout::horizontal([
+        Constraint::Percentage((100 - percent_x) / 2),
+        Constraint::Percentage(percent_x),
+        Constraint::Percentage((100 - percent_x) / 2),
+    ])
+    .areas(middle);
+
+    center
+}
+
+/// Draws a hex dump as a modal dialog centered over `area`, on top of
+/// whatever the screen already rendered there. Shared by every screen that
+/// lets you drill into a raw byte value (disk sectors, NVRAM variables).
+pub(crate) fn render_hex_dialog(frame: &mut Frame, area: Rect, title: &str, dump: &[u8]) {
+    let popup = centered_rect(80, 70, area);
+
+    // Erase whatever the table drew underneath before painting the dialog
+    // -- otherwise stray cells (e.g. table borders) can peek through
+    // wherever the dialog's own content doesn't fully repaint a cell.
+    frame.render_widget(Clear, popup);
+
+    let block = Block::default()
+        .title(title)
+        .borders(Borders::ALL)
+        .style(Style::default().fg(Color::Cyan).bg(Color::Black));
+    let inner = block.inner(popup);
+    frame.render_widget(block, popup);
+    frame.render_widget(HexDump::new(dump), inner);
 }

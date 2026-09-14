@@ -15,7 +15,6 @@ use uefi::proto::console::text::{Key, ScanCode};
 
 use super::{Action, Screen, human_size, move_selection};
 use crate::explore::disks;
-use crate::widgets::HexDump;
 
 pub struct DisksScreen {
     devices: Vec<disks::DiskDevice>,
@@ -71,17 +70,6 @@ impl Screen for DisksScreen {
     }
 
     fn render(&mut self, frame: &mut Frame, area: Rect) {
-        if let Some(dump) = &self.hex_dump {
-            let block = Block::default()
-                .title(" LBA 0 -- Enter to close ")
-                .borders(Borders::ALL)
-                .style(Style::default().fg(Color::Cyan));
-            let inner = block.inner(area);
-            frame.render_widget(block, area);
-            frame.render_widget(HexDump::new(dump), inner);
-            return;
-        }
-
         let header = Row::new(vec!["#", "Kind", "RO", "Block", "Blocks", "Size"])
             .style(Style::default().add_modifier(Modifier::BOLD));
 
@@ -128,5 +116,9 @@ impl Screen for DisksScreen {
         .highlight_symbol("> ");
 
         frame.render_stateful_widget(table, area, &mut self.table_state);
+
+        if let Some(dump) = &self.hex_dump {
+            super::render_hex_dialog(frame, area, " LBA 0 -- Enter to close ", dump);
+        }
     }
 }

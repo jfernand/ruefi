@@ -6,15 +6,14 @@ use alloc::vec;
 use alloc::vec::Vec;
 
 use ratatui::Frame;
-use ratatui::layout::{Constraint, Rect};
+use ratatui::layout::{Constraint, Layout, Rect};
 use ratatui::style::{Color, Modifier, Style};
-use ratatui::widgets::{Block, Borders, Cell, Row, Table, TableState};
+use ratatui::widgets::{Block, Borders, Cell, Paragraph, Row, Table, TableState};
 use uefi::Char16;
 use uefi::proto::console::text::{Key, ScanCode};
 
 use super::{Action, Screen, human_size, move_selection};
 use crate::explore::vars;
-use crate::widgets::HexDump;
 
 pub struct VarsScreen {
     variables: Vec<vars::UefiVariable>,
@@ -68,16 +67,8 @@ impl Screen for VarsScreen {
     }
 
     fn render(&mut self, frame: &mut Frame, area: Rect) {
-        if let Some(dump) = &self.hex_dump {
-            let block = Block::default()
-                .title(" variable value -- Enter to close ")
-                .borders(Borders::ALL)
-                .style(Style::default().fg(Color::Cyan));
-            let inner = block.inner(area);
-            frame.render_widget(block, area);
-            frame.render_widget(HexDump::new(dump), inner);
-            return;
-        }
+        let [table_area, description_area] =
+            Layout::vertical([Constraint::Min(0), Constraint::Length(3)]).areas(area);
 
         let header = Row::new(vec!["Name", "Vendor", "Attrs", "Size"])
             .style(Style::default().add_modifier(Modifier::BOLD));
@@ -113,6 +104,25 @@ impl Screen for VarsScreen {
         .row_highlight_style(Style::default().bg(Color::Blue).fg(Color::White))
         .highlight_symbol("> ");
 
-        frame.render_stateful_widget(table, area, &mut self.table_state);
+        frame.render_stateful_widget(table, table_area, &mut self.table_state);
+
+        let selected = self.table_state.selected().and_then(|i| self.variables.get(i));
+        let description = match selected {
+            Some(v) => match v.description {
+                Some(desc) => desc,
+                None => "Vendor-specific variable -- not part of the UEFI spec's global namespace, so no standard meaning to show.",
+            },
+            None => "",
+        };
+        let description = Paragraph::new(description).block(
+            Block::default()
+                .borders(Borders::ALL)
+                .style(Style::default().fg(Color::DarkGray)),
+        );
+        frame.render_widget(description, description_area);
+
+        if let Some(dump) = &self.hex_dump {
+            super::render_hex_dialog(frame, area, " variable value -- Enter to close ", dump);
+        }
     }
 }

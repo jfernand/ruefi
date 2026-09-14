@@ -6,3 +6,4 @@ pub mod disks;
 pub mod memmap;
 pub mod pci;
 pub mod vars;
+pub mod well_known_vars;

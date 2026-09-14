@@ -8,6 +8,8 @@ use alloc::vec::Vec;
 
 use uefi::runtime::{self, VariableAttributes, VariableKey, VariableVendor};
 
+use super::well_known_vars;
+
 #[derive(Debug, Clone)]
 pub struct UefiVariable {
     key: VariableKey,
@@ -15,6 +17,10 @@ pub struct UefiVariable {
     pub vendor: String,
     pub size: usize,
     pub attributes: String,
+    /// A short explanation of what this variable means, for the ones
+    /// defined by the UEFI spec itself. `None` for vendor-specific
+    /// variables, which have no standard meaning.
+    pub description: Option<&'static str>,
 }
 
 impl UefiVariable {
@@ -53,7 +59,8 @@ pub fn list() -> Vec<UefiVariable> {
     runtime::variable_keys()
         .filter_map(|k| k.ok())
         .map(|key| {
-            let vendor = if key.vendor == VariableVendor::GLOBAL_VARIABLE {
+            let is_global = key.vendor == VariableVendor::GLOBAL_VARIABLE;
+            let vendor = if is_global {
                 "Global".to_string()
             } else {
                 format!("{}", key.vendor.0)
@@ -63,11 +70,15 @@ pub fn list() -> Vec<UefiVariable> {
                 .map(|(data, attr)| (data.len(), format_attributes(attr)))
                 .unwrap_or((0, "?".to_string()));
 
+            let name = key.name.to_string();
+            let description = well_known_vars::describe(&name, is_global);
+
             UefiVariable {
-                name: key.name.to_string(),
+                name,
                 vendor,
                 size,
                 attributes,
+                description,
                 key,
             }
         })
