@@ -16,6 +16,7 @@ use crate::widgets::HexDump;
 
 pub mod acpi;
 pub mod disks;
+pub mod hda;
 pub mod memory;
 pub mod pci;
 pub mod vars;

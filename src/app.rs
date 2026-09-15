@@ -62,6 +62,7 @@ impl App {
             Box::new(screens::pci::PciScreen::new()),
             Box::new(screens::disks::DisksScreen::new()),
             Box::new(screens::vars::VarsScreen::new()),
+            Box::new(screens::hda::HdaScreen::new()),
         ];
 
         Self {
