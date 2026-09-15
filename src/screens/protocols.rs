@@ -94,6 +94,7 @@ impl Screen for ProtocolsScreen {
                     self.protocols.len()
                 ))
                 .borders(Borders::ALL)
+                .border_set(super::ASCII_BORDER)
                 .style(Style::default().fg(Color::Cyan)),
         )
         .row_highlight_style(Style::default().bg(Color::Blue).fg(Color::White))

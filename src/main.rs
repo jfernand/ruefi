@@ -5,16 +5,25 @@ extern crate alloc;
 
 mod app;
 mod explore;
+mod gop_backend;
 mod screens;
-mod uefi_backend;
 mod widgets;
 
+use core::time::Duration;
+
 use app::App;
+use uefi::boot;
 use uefi::prelude::*;
 
 #[entry]
 fn main() -> Status {
     uefi::helpers::init().unwrap();
 
-    App::new().run()
+    let Some(gop) = gop_backend::open_gop() else {
+        uefi::println!("ruefi: no Graphics Output Protocol found");
+        boot::stall(Duration::from_secs(3));
+        return Status::UNSUPPORTED;
+    };
+
+    App::new(gop_backend::GopBackend::new(gop)).run()
 }

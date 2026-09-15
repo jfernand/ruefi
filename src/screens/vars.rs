@@ -99,6 +99,7 @@ impl Screen for VarsScreen {
                     self.variables.len()
                 ))
                 .borders(Borders::ALL)
+                .border_set(super::ASCII_BORDER)
                 .style(Style::default().fg(Color::Cyan)),
         )
         .row_highlight_style(Style::default().bg(Color::Blue).fg(Color::White))
@@ -117,6 +118,7 @@ impl Screen for VarsScreen {
         let description = Paragraph::new(description).block(
             Block::default()
                 .borders(Borders::ALL)
+                .border_set(super::ASCII_BORDER)
                 .style(Style::default().fg(Color::DarkGray)),
         );
         frame.render_widget(description, description_area);

@@ -16,8 +16,8 @@ use uefi::prelude::*;
 use uefi::proto::console::text::{Key, ScanCode};
 use uefi::{Char16, Event, system};
 
+use crate::gop_backend::GopBackend;
 use crate::screens::{self, Action, Screen};
-use crate::uefi_backend::UefiBackend;
 
 const TICK_INTERVAL: Duration = Duration::from_millis(250);
 const SPINNER: [char; 4] = ['|', '/', '-', '\\'];
@@ -30,7 +30,7 @@ enum Tick {
 }
 
 pub struct App {
-    terminal: Terminal<UefiBackend>,
+    terminal: Terminal<GopBackend>,
     key_event: Event,
     timer_event: Event,
     spinner_frame: usize,
@@ -39,12 +39,10 @@ pub struct App {
 }
 
 impl App {
-    /// Sets up the terminal, backend, firmware events, and every screen
-    /// (which each gather their own platform data on construction). Does
-    /// not draw anything yet -- that happens on the first iteration of
-    /// `run`.
-    pub fn new() -> Self {
-        let backend = UefiBackend::new();
+    /// Sets up the terminal, firmware events, and every screen (which each
+    /// gather their own platform data on construction). Does not draw
+    /// anything yet -- that happens on the first iteration of `run`.
+    pub fn new(backend: GopBackend) -> Self {
         let terminal = Terminal::new(backend).unwrap();
 
         let key_event = system::with_stdin(|stdin| stdin.wait_for_key_event()).unwrap();
@@ -118,13 +116,14 @@ impl App {
                         Style::default()
                             .fg(Color::White)
                             .add_modifier(Modifier::BOLD),
-                    );
+                    )
+                    .divider("|");
                 frame.render_widget(tabs, tabs_area);
 
                 screen.render(frame, content_area);
 
                 let footer = Paragraph::new(format!(
-                    " {spinner}  \u{2190}/\u{2192} tabs   \u{2191}/\u{2193} select   Enter act   Esc/q quit"
+                    " {spinner}  </>  tabs   ^/v select   Enter act   Esc/q quit"
                 ))
                 .style(Style::default().fg(Color::DarkGray));
                 frame.render_widget(footer, footer_area);

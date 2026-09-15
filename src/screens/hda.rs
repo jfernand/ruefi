@@ -138,6 +138,7 @@ impl Screen for HdaScreen {
         let block = Block::default()
             .title(" HD Audio ")
             .borders(Borders::ALL)
+            .border_set(super::ASCII_BORDER)
             .style(Style::default().fg(Color::Cyan));
         frame.render_widget(Paragraph::new(text).block(block), area);
     }

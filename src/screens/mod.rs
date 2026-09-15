@@ -9,10 +9,26 @@ use alloc::string::String;
 use ratatui::Frame;
 use ratatui::layout::{Constraint, Layout, Rect};
 use ratatui::style::{Color, Style};
+use ratatui::symbols::border;
 use ratatui::widgets::{Block, Borders, Clear};
 use uefi::proto::console::text::Key;
 
 use crate::widgets::HexDump;
+
+/// Every screen borders its boxes with this instead of the ratatui default
+/// (Unicode line-drawing characters), since [`crate::gop_backend`] rasterizes
+/// text with a plain ASCII bitmap font that has no glyphs for those --
+/// they'd otherwise fall back to a replacement glyph and render as noise.
+pub(crate) const ASCII_BORDER: border::Set = border::Set {
+    top_left: "+",
+    top_right: "+",
+    bottom_left: "+",
+    bottom_right: "+",
+    vertical_left: "|",
+    vertical_right: "|",
+    horizontal_top: "-",
+    horizontal_bottom: "-",
+};
 
 pub mod acpi;
 pub mod disks;
@@ -113,6 +129,7 @@ pub(crate) fn render_dialog(
     let block = Block::default()
         .title(title)
         .borders(Borders::ALL)
+        .border_set(ASCII_BORDER)
         .style(Style::default().fg(Color::Cyan).bg(Color::Black));
     let inner = block.inner(popup);
     frame.render_widget(block, popup);

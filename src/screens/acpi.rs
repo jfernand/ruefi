@@ -56,6 +56,7 @@ impl Screen for AcpiScreen {
                 Block::default()
                     .title(" ACPI ")
                     .borders(Borders::ALL)
+                .border_set(super::ASCII_BORDER)
                     .style(Style::default().fg(Color::Cyan)),
             );
             frame.render_widget(msg, area);
@@ -92,6 +93,7 @@ impl Screen for AcpiScreen {
                     info.tables.len()
                 ))
                 .borders(Borders::ALL)
+                .border_set(super::ASCII_BORDER)
                 .style(Style::default().fg(Color::Cyan)),
         )
         .row_highlight_style(Style::default().bg(Color::Blue).fg(Color::White))
