@@ -63,6 +63,7 @@ impl App {
             Box::new(screens::disks::DisksScreen::new()),
             Box::new(screens::vars::VarsScreen::new()),
             Box::new(screens::hda::HdaScreen::new()),
+            Box::new(screens::protocols::ProtocolsScreen::new()),
         ];
 
         Self {

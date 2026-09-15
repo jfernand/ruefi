@@ -5,5 +5,7 @@ pub mod acpi;
 pub mod disks;
 pub mod memmap;
 pub mod pci;
+pub mod protocol_catalog;
+pub mod protocols;
 pub mod vars;
 pub mod well_known_vars;

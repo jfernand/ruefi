@@ -19,6 +19,7 @@ pub mod disks;
 pub mod hda;
 pub mod memory;
 pub mod pci;
+pub mod protocols;
 pub mod vars;
 
 /// What a screen wants the app to do after handling one key.
