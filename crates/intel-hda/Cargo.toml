@@ -1,0 +1,7 @@
+[package]
+name = "intel-hda"
+version = "0.1.0"
+edition = "2024"
+description = "Platform-agnostic Intel HD Audio (HDA) controller and codec driver core"
+
+[dependencies]

@@ -1,0 +1,9 @@
+[package]
+name = "intel-hda-uefi"
+version = "0.1.0"
+edition = "2024"
+description = "UEFI boot-services backend for the intel-hda driver core"
+
+[dependencies]
+intel-hda = { path = "../intel-hda" }
+uefi = "0.40"

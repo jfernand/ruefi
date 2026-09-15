@@ -1,3 +1,6 @@
+[workspace]
+members = ["crates/intel-hda", "crates/intel-hda-uefi"]
+
 [package]
 name = "ruefi"
 version = "0.1.0"
@@ -8,6 +11,8 @@ uefi = { version = "0.40", features = ["panic_handler", "alloc", "global_allocat
 ratatui = { version = "0.30", default-features = false }
 embedded-graphics = "0.8"
 libm = "0.2"
+intel-hda = { path = "crates/intel-hda" }
+intel-hda-uefi = { path = "crates/intel-hda-uefi" }
 
 [profile.release]
 panic = "abort"
