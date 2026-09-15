@@ -6,6 +6,8 @@ edition = "2024"
 [dependencies]
 uefi = { version = "0.40", features = ["panic_handler", "alloc", "global_allocator", "logger"] }
 ratatui = { version = "0.30", default-features = false }
+embedded-graphics = "0.8"
+libm = "0.2"
 
 [profile.release]
 panic = "abort"

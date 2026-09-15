@@ -1,5 +1,7 @@
 /target
 /restart.sh
 /esp
+/esp-asteroids
 /OVMF_VARS.fd
+/OVMF_VARS_asteroids.fd
 /.idea
