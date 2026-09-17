@@ -1,0 +1,9 @@
+[package]
+name = "asteroids-input-uefi"
+version = "0.1.0"
+edition = "2024"
+description = "UEFI text-input backend for asteroids-core: turns keypress events into an Input snapshot"
+
+[dependencies]
+asteroids-core = { path = "../asteroids-core" }
+uefi = "0.40"

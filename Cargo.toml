@@ -3,6 +3,7 @@ members = [
     "crates/intel-hda",
     "crates/intel-hda-uefi",
     "crates/asteroids-core",
+    "crates/asteroids-input-uefi",
 ]
 
 [package]
