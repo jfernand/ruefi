@@ -19,7 +19,7 @@ use uefi::{Char16, Event, system};
 use crate::gop_backend::GopBackend;
 use crate::screens::{self, Action, Screen};
 
-const TICK_INTERVAL: Duration = Duration::from_millis(250);
+const TICK_INTERVAL: Duration = Duration::from_millis(25);
 const SPINNER: [char; 4] = ['|', '/', '-', '\\'];
 
 /// A tick of the event loop: either a key was pressed, or the periodic
