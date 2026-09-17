@@ -14,8 +14,12 @@ pub mod controller;
 pub mod format;
 pub mod platform;
 pub mod regs;
+pub mod target;
 pub mod verbs;
 
 pub use controller::{Controller, Error};
 pub use format::PcmFormat;
 pub use platform::{DmaBuffer, Platform};
+pub use target::{
+    StreamPlan, Target, configure_and_play_output, find_output_target, unmute_output_at_zero_db,
+};

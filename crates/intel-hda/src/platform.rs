@@ -18,6 +18,22 @@ impl DmaBuffer {
     pub unsafe fn as_slice_mut(&mut self) -> &mut [u8] {
         unsafe { core::slice::from_raw_parts_mut(self.ptr, self.len) }
     }
+
+    /// Writes one 16-byte buffer descriptor list entry (8-byte physical
+    /// address, 4-byte length, 4-byte flags with IOC unset) at `index`.
+    ///
+    /// # Safety
+    /// This buffer must have been allocated with room for at least
+    /// `index + 1` such entries.
+    pub unsafe fn write_bdl_entry(&mut self, index: usize, addr: u64, length: u32) {
+        // SAFETY: forwarded from the caller.
+        unsafe {
+            let entry = self.ptr.add(index * 16);
+            (entry as *mut u64).write_volatile(addr);
+            (entry.add(8) as *mut u32).write_volatile(length);
+            (entry.add(12) as *mut u32).write_volatile(0);
+        }
+    }
 }
 
 /// Everything the [`crate::Controller`] needs from its environment: access to
