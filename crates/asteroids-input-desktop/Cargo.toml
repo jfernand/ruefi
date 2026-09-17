@@ -1,0 +1,10 @@
+[package]
+name = "asteroids-input-desktop"
+version = "0.1.0"
+edition = "2024"
+description = "Desktop input backend for asteroids-core: combines gamepad (gilrs) and keyboard (minifb) state into an Input snapshot"
+
+[dependencies]
+asteroids-core = { path = "../asteroids-core" }
+gilrs = "0.11"
+minifb = "0.19"
