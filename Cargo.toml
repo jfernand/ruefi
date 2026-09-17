@@ -1,5 +1,9 @@
 [workspace]
-members = ["crates/intel-hda", "crates/intel-hda-uefi"]
+members = [
+    "crates/intel-hda",
+    "crates/intel-hda-uefi",
+    "crates/asteroids-core",
+]
 
 [package]
 name = "ruefi"

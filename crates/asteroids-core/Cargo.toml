@@ -1,0 +1,9 @@
+[package]
+name = "asteroids-core"
+version = "0.1.0"
+edition = "2024"
+description = "Platform-agnostic Asteroids game state, physics, and embedded-graphics rendering"
+
+[dependencies]
+embedded-graphics = "0.8"
+libm = "0.2"
