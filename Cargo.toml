@@ -6,6 +6,7 @@ members = [
     "crates/asteroids-input-uefi",
     "crates/asteroids-uefi",
     "crates/asteroids-input-desktop",
+    "crates/asteroids-desktop",
 ]
 
 [package]

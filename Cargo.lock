@@ -35,6 +35,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "asteroids-desktop"
+version = "0.1.0"
+dependencies = [
+ "asteroids-core",
+ "asteroids-input-desktop",
+ "embedded-graphics",
+ "gilrs",
+ "minifb",
+]
+
+[[package]]
 name = "asteroids-input-desktop"
 version = "0.1.0"
 dependencies = [

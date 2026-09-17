@@ -1,0 +1,12 @@
+[package]
+name = "asteroids-desktop"
+version = "0.1.0"
+edition = "2024"
+description = "Asteroids running natively on desktop via minifb (window) and gilrs (gamepad). This workspace's ambient default target is x86_64-unknown-uefi (see ../../.cargo/config.toml), so this crate needs an explicit --target override, e.g.: cargo run -p asteroids-desktop --target x86_64-unknown-linux-gnu"
+
+[dependencies]
+asteroids-core = { path = "../asteroids-core" }
+asteroids-input-desktop = { path = "../asteroids-input-desktop" }
+embedded-graphics = "0.8"
+minifb = "0.19"
+gilrs = "0.11"
