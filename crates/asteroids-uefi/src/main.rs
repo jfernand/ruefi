@@ -6,11 +6,13 @@ extern crate alloc;
 use core::time::Duration;
 
 use asteroids_core::{Game, State};
-use asteroids_input_uefi::HeldKeys;
+use game_input::{InputSource, UefiInput};
 use gop_display::GopDisplay;
+use uefi::Char16;
 use uefi::boot::{self, EventType, ScopedProtocol, TimerTrigger, Tpl};
 use uefi::prelude::*;
 use uefi::proto::console::gop::GraphicsOutput;
+use uefi::proto::console::text::{Key, ScanCode};
 use uefi::system;
 
 const TICK_INTERVAL: Duration = Duration::from_millis(16);
@@ -39,7 +41,9 @@ fn main() -> Status {
         unsafe { boot::create_event(EventType::TIMER, Tpl::APPLICATION, None, None) }.unwrap();
     boot::set_timer(&timer_event, TimerTrigger::Periodic(TICK_INTERVAL)).unwrap();
 
-    let mut held = HeldKeys::new();
+    let mut input_source = UefiInput::new();
+    let mut restart_pressed = false;
+    let mut quit = false;
     let mut clock = 0.0f32;
     let dt = TICK_INTERVAL.as_secs_f32();
 
@@ -60,22 +64,31 @@ fn main() -> Status {
         if index == 0
             && let Some(key) = system::with_stdin(|stdin| stdin.read_key()).unwrap()
         {
-            held.apply(key, clock);
+            // Quit/restart are game-loop concerns, not input-state concerns,
+            // so they're matched here directly rather than through
+            // `UefiInput` -- everything else goes to it for hold-tracking.
+            match key {
+                Key::Special(ScanCode::ESCAPE) => quit = true,
+                Key::Printable(c) if c == Char16::try_from('q').unwrap() => quit = true,
+                Key::Printable(c) if c == Char16::try_from('\r').unwrap() => {
+                    restart_pressed = true;
+                }
+                other => input_source.key_event(other),
+            }
         } else {
             clock += dt;
-            let input = held.input(clock);
+            let input = input_source.poll();
             game.update(dt, &input);
-            held.fire_pressed = false;
 
-            if held.restart_pressed {
+            if restart_pressed {
                 if matches!(game.state, State::GameOver) {
                     game = Game::new(width as u32, height as u32, clock.to_bits());
                 }
-                held.restart_pressed = false;
+                restart_pressed = false;
             }
         }
 
-        if held.quit {
+        if quit {
             break;
         }
     }

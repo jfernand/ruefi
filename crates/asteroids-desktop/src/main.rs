@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use asteroids_core::{Game, State};
+use game_input::{DesktopInput, InputSource};
 use gilrs::Gilrs;
 use minifb::{Key, Window, WindowOptions};
 use minifb_display::MinifbDisplay;
@@ -25,7 +26,7 @@ fn main() {
     let mut display = MinifbDisplay::new(WIDTH, HEIGHT);
 
     while window.is_open() && !window.is_key_down(Key::Escape) {
-        let input = asteroids_input_desktop::poll(&window, &mut gilrs);
+        let input = DesktopInput { window: &window, gilrs: &mut gilrs }.poll();
         clock += dt;
         game.update(dt, &input);
         game.draw(&mut display);

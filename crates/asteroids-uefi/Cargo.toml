@@ -10,6 +10,6 @@ path = "src/main.rs"
 
 [dependencies]
 asteroids-core = { path = "../asteroids-core" }
-asteroids-input-uefi = { path = "../asteroids-input-uefi" }
+game-input = { path = "../game-input", default-features = false, features = ["uefi"] }
 gop-display = { path = "../gop-display" }
 uefi = { version = "0.40", features = ["panic_handler", "alloc", "global_allocator", "logger"] }

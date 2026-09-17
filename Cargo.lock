@@ -31,6 +31,7 @@ name = "asteroids-core"
 version = "0.1.0"
 dependencies = [
  "embedded-graphics",
+ "game-input",
  "libm",
 ]
 
@@ -39,7 +40,7 @@ name = "asteroids-desktop"
 version = "0.1.0"
 dependencies = [
  "asteroids-core",
- "asteroids-input-desktop",
+ "game-input",
  "gilrs",
  "minifb",
  "minifb-display",
@@ -50,23 +51,6 @@ name = "asteroids-hub75"
 version = "0.1.0"
 dependencies = [
  "asteroids-core",
-]
-
-[[package]]
-name = "asteroids-input-desktop"
-version = "0.1.0"
-dependencies = [
- "asteroids-core",
- "gilrs",
- "minifb",
-]
-
-[[package]]
-name = "asteroids-input-uefi"
-version = "0.1.0"
-dependencies = [
- "asteroids-core",
- "uefi",
 ]
 
 [[package]]
@@ -88,7 +72,7 @@ name = "asteroids-uefi"
 version = "0.1.0"
 dependencies = [
  "asteroids-core",
- "asteroids-input-uefi",
+ "game-input",
  "gop-display",
  "uefi",
 ]
@@ -408,6 +392,15 @@ dependencies = [
  "futures-task",
  "pin-project-lite",
  "slab",
+]
+
+[[package]]
+name = "game-input"
+version = "0.1.0"
+dependencies = [
+ "gilrs",
+ "minifb",
+ "uefi",
 ]
 
 [[package]]

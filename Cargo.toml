@@ -2,12 +2,11 @@
 members = [
     "crates/intel-hda",
     "crates/intel-hda-uefi",
+    "crates/game-input",
     "crates/gop-display",
     "crates/minifb-display",
     "crates/asteroids-core",
-    "crates/asteroids-input-uefi",
     "crates/asteroids-uefi",
-    "crates/asteroids-input-desktop",
     "crates/asteroids-desktop",
     "crates/asteroids-hub75",
     "crates/asteroids-oscilloscope",

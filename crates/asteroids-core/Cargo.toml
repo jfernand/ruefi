@@ -7,3 +7,4 @@ description = "Platform-agnostic Asteroids game state, physics, and embedded-gra
 [dependencies]
 embedded-graphics = "0.8"
 libm = "0.2"
+game-input = { path = "../game-input", default-features = false }

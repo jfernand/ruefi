@@ -1,0 +1,15 @@
+[package]
+name = "game-input"
+version = "0.1.0"
+edition = "2024"
+description = "A generic digital-input abstraction (left/right/thrust/fire) with optional desktop (minifb+gilrs) and UEFI backends"
+
+[features]
+default = ["desktop"]
+desktop = ["dep:minifb", "dep:gilrs"]
+uefi = ["dep:uefi"]
+
+[dependencies]
+minifb = { version = "0.19", optional = true }
+gilrs = { version = "0.11", optional = true }
+uefi = { version = "0.40", optional = true }

@@ -184,12 +184,9 @@ struct Bullet {
     ttl: f32,
 }
 
-pub struct Input {
-    pub left: bool,
-    pub right: bool,
-    pub thrust: bool,
-    pub fire: bool,
-}
+/// Re-exported so callers don't need a direct `game-input` dependency just
+/// to name the type [`Game::update`] takes.
+pub use game_input::InputState as Input;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum State {
