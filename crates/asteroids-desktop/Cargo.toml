@@ -7,6 +7,6 @@ description = "Asteroids running natively on desktop via minifb (window) and gil
 [dependencies]
 asteroids-core = { path = "../asteroids-core" }
 asteroids-input-desktop = { path = "../asteroids-input-desktop" }
-embedded-graphics = "0.8"
+minifb-display = { path = "../minifb-display" }
 minifb = "0.19"
 gilrs = "0.11"

@@ -2,6 +2,8 @@
 members = [
     "crates/intel-hda",
     "crates/intel-hda-uefi",
+    "crates/gop-display",
+    "crates/minifb-display",
     "crates/asteroids-core",
     "crates/asteroids-input-uefi",
     "crates/asteroids-uefi",

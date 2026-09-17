@@ -1,0 +1,9 @@
+[package]
+name = "minifb-display"
+version = "0.1.0"
+edition = "2024"
+description = "An embedded-graphics DrawTarget backed by a minifb window's pixel buffer"
+
+[dependencies]
+embedded-graphics = "0.8"
+minifb = "0.19"

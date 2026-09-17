@@ -1,8 +1,8 @@
 //! An `embedded-graphics` [`DrawTarget`] backed by a `minifb` window's pixel
-//! buffer. Mirrors `asteroids-uefi`'s `GopDisplay` in shape, but simpler:
-//! `minifb::Window::update_with_buffer` wants one `u32` per pixel in `0RGB`
-//! order, so there's no BGR-vs-RGB runtime detection to do the way a real
-//! GOP framebuffer needs.
+//! buffer. Mirrors `gop-display`'s shape, but simpler: `minifb`'s
+//! `Window::update_with_buffer` wants one `u32` per pixel in `0RGB` order,
+//! so there's no BGR-vs-RGB runtime detection to do the way a real GOP
+//! framebuffer needs.
 
 use std::convert::Infallible;
 

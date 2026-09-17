@@ -11,10 +11,14 @@
 //! rather than `GraphicsOutput::blt`'s `BufferToVideo` operation: OVMF's
 //! (software) `Blt` implementation turned out to be dramatically slower
 //! than a native memcpy for a full-frame transfer done every tick, to the
-//! point the game was unplayably slow. `blt`'s solid-color `VideoFill` is
-//! a different, hardware-acceleratable operation and isn't affected by
-//! this -- but we don't need it any more either, since clears now just
-//! fill our own buffer.
+//! point a real-time game driving it every frame was unplayably slow.
+//! `blt`'s solid-color `VideoFill` is a different, hardware-acceleratable
+//! operation and isn't affected by this -- but it isn't needed either,
+//! since clears just fill the owned buffer like any other draw.
+
+#![no_std]
+
+extern crate alloc;
 
 use core::convert::Infallible;
 use core::ptr;
@@ -151,7 +155,7 @@ impl DrawTarget for GopDisplay<'_> {
                 // single frame.
                 self.buffer[row_start..row_end].fill(b0);
             } else {
-                for chunk in self.buffer[row_start..row_end].chunks_exact_mut(4) {
+                for chunk in self.buffer[row_start..row_end].as_chunks_mut::<4>().0 {
                     chunk.copy_from_slice(&pattern);
                 }
             }

@@ -1,5 +1,3 @@
-mod minifb_display;
-
 use std::time::Duration;
 
 use asteroids_core::{Game, State};

@@ -3,8 +3,6 @@
 
 extern crate alloc;
 
-mod gop_display;
-
 use core::time::Duration;
 
 use asteroids_core::{Game, State};

@@ -1,0 +1,9 @@
+[package]
+name = "gop-display"
+version = "0.1.0"
+edition = "2024"
+description = "An embedded-graphics DrawTarget backed by UEFI's Graphics Output Protocol"
+
+[dependencies]
+embedded-graphics = "0.8"
+uefi = "0.40"

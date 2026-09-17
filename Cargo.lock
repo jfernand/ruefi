@@ -40,9 +40,9 @@ version = "0.1.0"
 dependencies = [
  "asteroids-core",
  "asteroids-input-desktop",
- "embedded-graphics",
  "gilrs",
  "minifb",
+ "minifb-display",
 ]
 
 [[package]]
@@ -89,7 +89,7 @@ version = "0.1.0"
 dependencies = [
  "asteroids-core",
  "asteroids-input-uefi",
- "embedded-graphics",
+ "gop-display",
  "uefi",
 ]
 
@@ -462,6 +462,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e4eba85ea1d0a966a983acd07deee566e67395d2d96b6fb39e62b5a833f1eb0b"
 
 [[package]]
+name = "gop-display"
+version = "0.1.0"
+dependencies = [
+ "embedded-graphics",
+ "uefi",
+]
+
+[[package]]
 name = "hashbrown"
 version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -724,6 +732,14 @@ dependencies = [
  "x11-dl",
  "xkb",
  "xkbcommon-sys",
+]
+
+[[package]]
+name = "minifb-display"
+version = "0.1.0"
+dependencies = [
+ "embedded-graphics",
+ "minifb",
 ]
 
 [[package]]
