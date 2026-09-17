@@ -404,6 +404,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "game-sfx"
+version = "0.1.0"
+dependencies = [
+ "wavesynth",
+]
+
+[[package]]
 name = "getrandom"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1349,6 +1356,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "81941cd78d0c92026c33e5e01312845a4cb1e9af3407f9134b100dd03144103e"
 dependencies = [
  "unicode-ident",
+]
+
+[[package]]
+name = "wavesynth"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "77dc333185015692b16b65e3f12accaf6c8c71b3655d498bf1783d0fcaee8861"
+dependencies = [
+ "libm",
 ]
 
 [[package]]

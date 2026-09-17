@@ -5,6 +5,7 @@ members = [
     "crates/game-input",
     "crates/gop-display",
     "crates/minifb-display",
+    "crates/game-sfx",
     "crates/asteroids-core",
     "crates/asteroids-uefi",
     "crates/asteroids-desktop",

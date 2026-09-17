@@ -1,0 +1,8 @@
+[package]
+name = "game-sfx"
+version = "0.1.0"
+edition = "2024"
+description = "Named game sound-effect presets (fire/explosion/thrust) mixed in software from independent wavesynth engines"
+
+[dependencies]
+wavesynth = "0.1.0"
