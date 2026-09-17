@@ -1,0 +1,8 @@
+[package]
+name = "asteroids-tui"
+version = "0.1.0"
+edition = "2024"
+description = "SCAFFOLD: Asteroids rendered as terminal ASCII art via ratatui's Canvas widget -- not yet implemented, see src/lib.rs"
+
+[dependencies]
+asteroids-core = { path = "../asteroids-core" }

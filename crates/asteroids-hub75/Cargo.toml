@@ -1,0 +1,8 @@
+[package]
+name = "asteroids-hub75"
+version = "0.1.0"
+edition = "2024"
+description = "SCAFFOLD: Asteroids over a HUB75 RGB LED matrix panel -- not yet implemented, see src/lib.rs"
+
+[dependencies]
+asteroids-core = { path = "../asteroids-core" }

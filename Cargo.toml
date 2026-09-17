@@ -7,6 +7,9 @@ members = [
     "crates/asteroids-uefi",
     "crates/asteroids-input-desktop",
     "crates/asteroids-desktop",
+    "crates/asteroids-hub75",
+    "crates/asteroids-oscilloscope",
+    "crates/asteroids-tui",
 ]
 
 [package]
