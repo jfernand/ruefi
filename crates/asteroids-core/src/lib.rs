@@ -188,6 +188,17 @@ struct Bullet {
 /// to name the type [`Game::update`] takes.
 pub use game_input::InputState as Input;
 
+/// Discrete, one-shot events a single [`Game::update`] call may have
+/// triggered -- for a caller to turn into sound. Continuous state (like
+/// thrust) doesn't need a field here: the caller already has `Input`
+/// itself, since it built it before calling `update`.
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
+pub struct SoundEvents {
+    pub fired: bool,
+    pub asteroid_destroyed: bool,
+    pub game_over: bool,
+}
+
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum State {
     Playing,
@@ -244,9 +255,11 @@ impl Game {
         }
     }
 
-    pub fn update(&mut self, dt: f32, input: &Input) {
+    pub fn update(&mut self, dt: f32, input: &Input) -> SoundEvents {
+        let mut events = SoundEvents::default();
+
         if matches!(self.state, State::GameOver) {
-            return;
+            return events;
         }
 
         if input.left {
@@ -270,6 +283,7 @@ impl Game {
                 vel: self.ship_vel.add(facing.scale(BULLET_SPEED)),
                 ttl: BULLET_TTL,
             });
+            events.fired = true;
         }
 
         for b in &mut self.bullets {
@@ -293,6 +307,7 @@ impl Game {
                 if a.pos.dist(b.pos) < a.radius() {
                     hit_bullets[bi] = true;
                     self.score += a.size.score();
+                    events.asteroid_destroyed = true;
                     if let Some(smaller) = a.size.smaller() {
                         spawned.push(Asteroid::spawn(&mut self.rng, a.pos, smaller));
                         spawned.push(Asteroid::spawn(&mut self.rng, a.pos, smaller));
@@ -316,7 +331,10 @@ impl Game {
             .any(|a| a.pos.dist(self.ship_pos) < a.radius() + SHIP_RADIUS)
         {
             self.state = State::GameOver;
+            events.game_over = true;
         }
+
+        events
     }
 
     pub fn draw<D>(&self, display: &mut D)
