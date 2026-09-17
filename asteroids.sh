@@ -2,7 +2,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-cargo build --release --bin asteroids
+cargo build --release -p asteroids-uefi
 
 rm -rf esp-asteroids
 mkdir -p esp-asteroids/EFI/BOOT

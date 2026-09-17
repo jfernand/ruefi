@@ -3,75 +3,19 @@
 
 extern crate alloc;
 
-mod game;
 mod gop_display;
 
 use core::time::Duration;
 
-use game::{Game, Input, State};
+use asteroids_core::{Game, State};
+use asteroids_input_uefi::HeldKeys;
 use gop_display::GopDisplay;
-use uefi::Char16;
 use uefi::boot::{self, EventType, ScopedProtocol, TimerTrigger, Tpl};
 use uefi::prelude::*;
 use uefi::proto::console::gop::GraphicsOutput;
-use uefi::proto::console::text::{Key, ScanCode};
 use uefi::system;
 
-/// How long a held direction/thrust key is considered still "held" after
-/// its most recent keystroke event, in seconds. UEFI's text input only
-/// reports discrete keypress events (no key-up), but a held key on a real
-/// (or emulated) keyboard produces repeated events via typematic repeat --
-/// so we treat "still getting events" as "still held", and let the state
-/// decay shortly after the repeats stop. This is the standard trick for
-/// approximating held-key state from a keypress-only input source.
-const HOLD_GRACE: f32 = 0.18;
 const TICK_INTERVAL: Duration = Duration::from_millis(16);
-
-struct HeldKeys {
-    left_until: f32,
-    right_until: f32,
-    thrust_until: f32,
-    fire_pressed: bool,
-    restart_pressed: bool,
-    quit: bool,
-}
-
-impl HeldKeys {
-    fn new() -> Self {
-        Self {
-            left_until: 0.0,
-            right_until: 0.0,
-            thrust_until: 0.0,
-            fire_pressed: false,
-            restart_pressed: false,
-            quit: false,
-        }
-    }
-
-    fn apply(&mut self, key: Key, now: f32) {
-        match key {
-            Key::Special(ScanCode::LEFT) => self.left_until = now + HOLD_GRACE,
-            Key::Special(ScanCode::RIGHT) => self.right_until = now + HOLD_GRACE,
-            Key::Special(ScanCode::UP) => self.thrust_until = now + HOLD_GRACE,
-            Key::Special(ScanCode::ESCAPE) => self.quit = true,
-            Key::Printable(c) if c == Char16::try_from(' ').unwrap() => self.fire_pressed = true,
-            Key::Printable(c) if c == Char16::try_from('\r').unwrap() => {
-                self.restart_pressed = true;
-            }
-            Key::Printable(c) if c == Char16::try_from('q').unwrap() => self.quit = true,
-            _ => {}
-        }
-    }
-
-    fn input(&self, now: f32) -> Input {
-        Input {
-            left: now < self.left_until,
-            right: now < self.right_until,
-            thrust: now < self.thrust_until,
-            fire: self.fire_pressed,
-        }
-    }
-}
 
 fn open_gop() -> Option<ScopedProtocol<GraphicsOutput>> {
     let handle = boot::get_handle_for_protocol::<GraphicsOutput>().ok()?;

@@ -4,6 +4,7 @@ members = [
     "crates/intel-hda-uefi",
     "crates/asteroids-core",
     "crates/asteroids-input-uefi",
+    "crates/asteroids-uefi",
 ]
 
 [package]

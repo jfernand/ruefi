@@ -1,0 +1,15 @@
+[package]
+name = "asteroids-uefi"
+version = "0.1.0"
+edition = "2024"
+description = "Asteroids running over UEFI's Graphics Output Protocol"
+
+[[bin]]
+name = "asteroids"
+path = "src/main.rs"
+
+[dependencies]
+asteroids-core = { path = "../asteroids-core" }
+asteroids-input-uefi = { path = "../asteroids-input-uefi" }
+uefi = { version = "0.40", features = ["panic_handler", "alloc", "global_allocator", "logger"] }
+embedded-graphics = "0.8"
